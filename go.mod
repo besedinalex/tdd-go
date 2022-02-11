@@ -1,4 +1,4 @@
-module tdd-go
+module github.com/besedinalex/tdd-go
 
 go 1.17
 
