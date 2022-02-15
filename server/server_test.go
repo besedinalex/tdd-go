@@ -29,7 +29,7 @@ func TestGETPlayers(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		assertResponseCode(t, response.Code, http.StatusOK)
+		assertStatusCode(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "20")
 	})
 
@@ -38,7 +38,7 @@ func TestGETPlayers(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		assertResponseCode(t, response.Code, http.StatusOK)
+		assertStatusCode(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "10")
 	})
 
@@ -47,12 +47,32 @@ func TestGETPlayers(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		assertResponseCode(t, response.Code, http.StatusNotFound)
+		assertStatusCode(t, response.Code, http.StatusNotFound)
+	})
+}
+
+func TestStoreWins(t *testing.T) {
+	store := StubPlayerStore{
+		map[string]int{},
+	}
+	server := &PlayerServer{&store}
+
+	t.Run("returns accepted on POST", func(t *testing.T) {
+		request := newPostWinRequest("Pepper")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		assertStatusCode(t, response.Code, http.StatusAccepted)
 	})
 }
 
 func newGetScoreRequest(name string) *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/players/%s", name), nil)
+	return req
+}
+
+func newPostWinRequest(name string) *http.Request {
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/players/%s", name), nil)
 	return req
 }
 
@@ -63,7 +83,7 @@ func assertResponseBody(t testing.TB, got, want string) {
 	}
 }
 
-func assertResponseCode(t testing.TB, got, want int) {
+func assertStatusCode(t testing.TB, got, want int) {
 	t.Helper()
 	if got != want {
 		t.Errorf("Status code: got %d want %d", got, want)
